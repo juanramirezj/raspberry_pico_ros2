@@ -2,6 +2,7 @@ GP2 = AIN2
 GP3 = AIN1
 GP4 = BIN1
 GP5 = BIN2
+GP6 = STDBY
 
 +++++++++++++++++++++++++++++++++++++++++
 + xIN1 + xIN2 + xOUT1 + XOUT2 + FUNCION +

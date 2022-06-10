@@ -7,9 +7,11 @@ This repository includes my first try to integrate raspberry pico as a motor dri
 
 ### Hardware
 
-- Raspberry pico
-- Jetson Nano
-- Jetson AGX
+- Raspberry pico (1)
+- Motor Driver DRV8833 (1 or 2)
+- DC Motors with hall encoder (2 or 4)
+- Jetson Nano (1) or Jetson AGX (1)
+
 
 ### Software
 
@@ -18,9 +20,13 @@ This repository includes my first try to integrate raspberry pico as a motor dri
 - Ubuntu 20.04
 - ROS 2 Foxy
 - Jetpack 5.0.1 Developer Preview
+- VSC 
 
 ## Setup
 
+This is only for checking motor integration. No encoder input at this time.
+
+![DC motors and driver](./images/motors_and_driver.png)
 ## Status
 
 At this state I'm testing raspberry pico before integrating as a ros2 node to move motors and collect telemetry
