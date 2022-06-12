@@ -27,6 +27,59 @@ This repository includes my first try to integrate raspberry pico as a motor dri
 This is only for checking motor integration. No encoder input at this time.
 
 ![DC motors and driver](./images/motors_and_driver.png)
+
+## Program description
+
+### 1. motor_driver
+
+#### Objective
+
+Test motor 2 motor movement, direction forward/reverse
+
+#### Expected behaviour
+
+```
+while(1)
+{
+    Motor 1 move forward
+    Motor 1 move backward
+    Motor 1 stop
+
+    Motor 2 move forward
+    Motor 2 move backward
+    Motor 2 stop
+}
+```
+### 2. motor2_driver
+
+#### Objective
+
+Test motor speed control
+
+#### Expected behaviour
+
+
+```
+while(1)
+{
+    Motor 1 move forward full speed
+    Motor 2 move forward full speed
+
+    Motor 2 move backward full speed
+    Motor 2 move backward full speed
+
+    Motor 2 move backward half speed
+    Motor 2 move backward half speed
+}
+```
+
+### 3. motor3_driver
+
+Only some testing. Anything too much relevant.
+
+### 4. motor4_ros
+
+
 ## Status
 
 At this state I'm testing raspberry pico before integrating as a ros2 node to move motors and collect telemetry
