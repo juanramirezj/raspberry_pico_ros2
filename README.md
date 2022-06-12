@@ -79,6 +79,7 @@ Only some testing. Anything too much relevant.
 
 ### 4. motor4_ros
 
+First testing of a node for raspberry pico for subscribe and publish data to/from motors using micro ROS
 
 ## Status
 
