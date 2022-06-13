@@ -12,12 +12,17 @@ link_directories( /home/administrator/micro_ros_ws/src/micro_ros_raspberrypi_pic
 add_executable(motor4_ros
     main.c
     pico_uart_transport.c
+    motor.c
+    ssd1306.c
 )
 
 target_link_libraries(motor4_ros
    pico_stdlib
    microros
-   hardware_pwm)
+   hardware_pwm
+   pico_stdlib 
+   hardware_i2c
+   )
 
 
 target_include_directories(motor4_ros PUBLIC

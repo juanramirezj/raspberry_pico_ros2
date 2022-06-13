@@ -1,3 +1,6 @@
 [submodule "pico_sdk"]
 	path = pico_sdk
 	url = https://github.com/raspberrypi/pico-sdk.git
+[submodule "pico-ssd1306"]
+	path = pico-ssd1306
+	url = https://github.com/daschr/pico-ssd1306.git
