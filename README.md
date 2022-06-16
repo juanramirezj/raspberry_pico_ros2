@@ -26,7 +26,7 @@ This repository includes my first try to integrate raspberry pico as a motor dri
 
 This is only for checking motor integration. No encoder input at this time.
 
-![DC motors and driver](./images/motors_and_driver.png)
+![DC motors and driver](./images/circuit_base_rel2.png)
 
 ## Program description
 

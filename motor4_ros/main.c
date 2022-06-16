@@ -43,6 +43,7 @@ void ping_subscription_callback(const void * msgin)
 {
     static int led_status = false;
 	const geometry_msgs__msg__Twist * msg = (const geometry_msgs__msg__Twist *)msgin;
+    char line[80];
 
 	// Dont pong my own pings
     /*
@@ -62,6 +63,9 @@ void ping_subscription_callback(const void * msgin)
     int forward;
 
     speed = msg->linear.x;
+    sprintf(line,"S=%i", speed );
+    debug_txt(line);
+
     forward = (speed >= 0);
 
     BiMotorspeed(&mot1, abs(speed), forward);
@@ -96,8 +100,9 @@ void display_init()
     ssd1306_clear(&disp);
 }
 
-char debug_txt(char * text)
+void  debug_txt(char * text)
 {
+            ssd1306_clear(&disp);
             ssd1306_draw_string(&disp, 8, 24, 2, text);
             ssd1306_show(&disp);
 
@@ -107,6 +112,11 @@ int main()
 {
     display_init();
     debug_txt("START");
+
+    debug_txt("Mini1");
+    motor_init_all();
+    debug_txt("TstMot");
+    test_motor();
 
     rmw_uros_set_custom_transport(
 		true,
@@ -146,6 +156,7 @@ int main()
     // blink_led(2);
 
     // Create node
+    debug_txt("NODE1");
     rcl_node_t node;
     RCCHECK(rclc_node_init_default(&node, "pico_node", "", &support));
     
@@ -163,6 +174,7 @@ int main()
 
     // Create executor
     // blink_led(5);
+    debug_txt("EXEC1");
     rclc_executor_t executor;
     RCCHECK( rclc_executor_init(&executor, &support.context, 2, &allocator) ); // change the 2 for the number of executors
 
@@ -174,11 +186,10 @@ int main()
 
     // Create and allocate space for the messages
 	
-    motor_init_all();
+
     
-    test_motor();
     blink_led(3);    
-    
+    debug_txt("While");
     while (true)
     {
         rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));

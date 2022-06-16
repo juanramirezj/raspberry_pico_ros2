@@ -7,6 +7,7 @@
 #include "hardware/pwm.h"
 
 #include "motor.h"
+#include "ssd1306.h"
 
 const uint STBY_PIN = 6;
 BiMotor mot1;
@@ -121,7 +122,7 @@ int motor_init_all()
 
     // Timer
     struct repeating_timer timer;
-    add_repeating_timer_ms(delay_ms_timer, MyTimerHandler, NULL, &timer);
+    //add_repeating_timer_ms(delay_ms_timer, MyTimerHandler, NULL, &timer);
 
     //Interrupts for encoder
     gpio_set_function(mot1_speed, GPIO_FUNC_SIO);
@@ -150,31 +151,38 @@ int motor_init_all()
 
 void test_motor()
 {
-    blink_led(4);
+    debug_txt("Mini1");
+
+    //blink_led(4);
     BiMotorspeed(&mot1, 100, true);
     BiMotorspeed(&mot2, 100, true);        
+    
+    debug_txt("Slp 2s");
     sleep_ms(2000);
     printf("Speed 1= %i  Speed 2= %i\n", speed1,speed2);
 
-    blink_led(5);
+    debug_txt("Mini2");
+    //blink_led(5);
     BiMotorspeed(&mot1, 60, true);
     BiMotorspeed(&mot2, 60, true);
-    
+    sleep_ms(2000);   
     printf("Speed 1= %i  Speed 2= %i\n", speed1,speed2);
 
-    blink_led(6);
+    debug_txt("Mini3");
+    //blink_led(6);
     BiMotorspeed(&mot1, 100, false);
     BiMotorspeed(&mot2, 100, false);
     sleep_ms(2000);
     printf("Speed 1= %i  Speed 2= %i\n", speed1,speed2);
 
-    blink_led(7);
+    debug_txt("Mini4");
+    //blink_led(7);
     BiMotorspeed(&mot1, 60, false);
     BiMotorspeed(&mot2, 60, false);
     sleep_ms(2000);               
     printf("Speed 1= %i  Speed 2= %i\n", speed1,speed2);
 
-
+    debug_txt("Mini5");
     sleep_ms(4000);
     BiMotorspeed(&mot1, 0, true);
     BiMotorspeed(&mot2, 0, true);    
