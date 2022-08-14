@@ -23,7 +23,8 @@
 
 
 const uint LED_PIN = 25;
-
+const uint ENCODER1_PIN = 26;
+const uint ENCODER2_PIN = 27;
 
 rcl_publisher_t publisher;
 rcl_subscription_t ping_subscriber;
