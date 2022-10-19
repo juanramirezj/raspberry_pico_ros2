@@ -15,6 +15,8 @@
 #include "ssd1306.h"  // https://github.com/daschr/pico-ssd1306
 
 #include "motor.h"
+#include "diff_controller.h"
+#include "commands.h"
 
 #define STRING_BUFFER_LEN 100
 
@@ -31,6 +33,193 @@ rcl_subscription_t ping_subscriber;
 
 std_msgs__msg__Int32 msg;
 geometry_msgs__msg__Twist incoming_ping;
+
+// Variables to test motor
+// https://github.com/joshnewans/ros_arduino_bridge/blob/main/ROSArduinoBridge/ROSArduinoBridge.ino
+
+/* Run the PID loop at 30 times per second */
+#define PID_RATE           30     // Hz
+/* Convert the rate into an interval */
+const int PID_INTERVAL = 1000 / PID_RATE;
+
+/* Track the next time we make a PID calculation */
+unsigned long nextPID = PID_INTERVAL;
+
+/* Stop the robot if it hasn't received a movement command
+in this number of milliseconds */
+#define AUTO_STOP_INTERVAL 2000
+long lastMotorCommand = AUTO_STOP_INTERVAL;
+
+// A pair of varibles to help parse serial commands (thanks Fergs)
+int arg = 0;
+int Myindex = 0;
+
+// Variable to hold an input character
+char chr;
+
+// Variable to hold the current single-character command
+char cmd;
+
+// Character arrays to hold the first and second arguments
+char argv1[16];
+char argv2[16];
+
+// The arguments converted to integers
+long arg1;
+long arg2;
+
+/* Clear the current command parameters */
+void resetCommand() {
+  // cmd = NULL;
+  cmd = '\0';
+  memset(argv1, 0, sizeof(argv1));
+  memset(argv2, 0, sizeof(argv2));
+  arg1 = 0;
+  arg2 = 0;
+  arg = 0;
+  Myindex = 0;
+}
+
+/* Run a command.  Commands are defined in commands.h */
+int runCommand() {
+  char line[20];
+  int i = 0;
+  char *p = argv1;
+  char *str;
+  int pid_args[4];
+  arg1 = atoi(argv1);
+  arg2 = atoi(argv2);
+  sprintf(line,"%c", cmd);
+
+  debug_txt(line);
+
+  switch(cmd) {
+
+  case READ_ENCODERS:
+    printf("%u %u\n\r", readEncoder(LEFT), readEncoder(RIGHT));
+    break;
+
+   case RESET_ENCODERS:
+    resetEncoders();
+    resetPID();
+    printf("OK\n\r");
+    break;
+
+  case MOTOR_SPEEDS:
+    /* Reset the auto stop timer */
+    lastMotorCommand = to_ms_since_boot(	get_absolute_time ());
+    if (arg1 == 0 && arg2 == 0) {
+      setMotorSpeeds(0, 0);
+      resetPID();
+      moving = 0;
+    }
+    else moving = 1;
+    leftPID.TargetTicksPerFrame = arg1;
+    rightPID.TargetTicksPerFrame = arg2;
+    printf("OK\n\r"); 
+    break;
+  case MOTOR_RAW_PWM:
+    /* Reset the auto stop timer */
+    lastMotorCommand = to_ms_since_boot(	get_absolute_time ());
+    resetPID();
+    moving = 0; // Sneaky way to temporarily disable the PID
+    setMotorSpeeds(arg1, arg2);
+    printf("OK\n\r"); 
+    break;
+  case UPDATE_PID:
+    while ((str = strtok_r(p, ":", &p)) !=  NULL) {
+       pid_args[i] = atoi(str);
+       i++;
+    }
+    Kp = pid_args[0];
+    Kd = pid_args[1];
+    Ki = pid_args[2];
+    Ko = pid_args[3];
+    printf("OK\n\r");
+    break;
+
+  default:
+    printf("Invalid Command\n\r");
+    break;
+  }
+}
+
+
+void my_loop()
+{
+  int16_t chr;
+
+  while(true)
+  {
+    chr = getchar_timeout_us(0);
+    while (chr != PICO_ERROR_TIMEOUT) 
+    {
+      
+      // Read the next character
+      //chr = Serial.read();
+      //chr = getchar();
+
+      // Terminate a command with a CR
+      printf("%c", chr);
+      if (chr == 13) 
+      {
+        if (arg == 1) argv1[Myindex] = '\0';  //NULL;
+        else if (arg == 2) argv2[Myindex] = '\0'; //NULL;
+        runCommand();
+        resetCommand();
+      }
+      // Use spaces to delimit parts of the command
+      else if (chr == ' ') 
+      {
+        // Step through the arguments
+        //printf("arg=%i Myindex=%i", arg, Myindex);
+        if (arg == 0) arg = 1;
+        else if (arg == 1)  
+        {
+          argv1[Myindex] = '\0';  //NULL;
+          arg = 2;
+          Myindex = 0;
+        }
+        chr = getchar_timeout_us(0);
+        continue;
+      }
+      else 
+      {
+        if (arg == 0) 
+        {
+          // The first arg is the single-letter command
+          cmd = chr;
+        }
+        else if (arg == 1) 
+        {
+          // Subsequent arguments can be more than one character
+          argv1[Myindex] = chr;
+          Myindex++;
+        }
+        else if (arg == 2) 
+        {
+          argv2[Myindex] = chr;
+          Myindex++;
+        }
+      }
+      chr = getchar_timeout_us(0);
+    }
+    
+      // If we are using base control, run a PID calculation at the appropriate intervals
+
+    if (to_ms_since_boot(	get_absolute_time ()) > nextPID) {
+      updatePID();
+      nextPID += PID_INTERVAL;
+    }
+    
+    // Check to see if we have exceeded the auto-stop interval
+    if ((to_ms_since_boot(	get_absolute_time ()) - lastMotorCommand) > AUTO_STOP_INTERVAL) {;
+      setMotorSpeeds(0, 0);
+      moving = 0;
+    }
+  }  
+}
+
 
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time)
 {
@@ -111,13 +300,20 @@ void  debug_txt(char * text)
 
 int main()
 {
+    resetPID();
+
+
+
     display_init();
     debug_txt("START");
 
     debug_txt("Mini1");
     motor_init_all();
     debug_txt("TstMot");
-    test_motor();
+    // test_motor();
+
+    my_loop();
+
     debug_txt("ROS2...");
 
     rmw_uros_set_custom_transport(

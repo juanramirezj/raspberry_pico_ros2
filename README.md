@@ -80,6 +80,33 @@ Only some testing. Anything too much relevant.
 ### 4. motor4_ros
 
 First testing of a node for raspberry pico for subscribe and publish data to/from motors using micro ROS
+The code uploaded into the raspberry pico creates some ROS2 objects:
+
+**subscriber**
+/mobile_base_controller/cmd_vel (Type: geometry_msgs/msg/Twist)
+
+**publisher**
+/pico_publisher (Type: std_msgs/msg/Int32)
+
+Compile and copy the program into raspberry-pico:
+
+```
+cd build
+make
+cp motor4_ros.uf2 /media/administrator/RPI-RP2/
+```
+
+execute the following code into the master device that the raspberry pico is connected to on a *terminal 1*:
+
+```
+sudo docker run --device=/dev/ttyACM0:/dev/ttyACM0 -it --rm --net=host microros/micro-ros-agent:foxy serial --dev /dev/ttyACM0 baudrate=115200
+```
+
+you can test the connection using this command on a *terminal 2* (linear x is the speed, angular z is the steering):
+```
+ros2  topic  pub --once /mobile_base_controller/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 80.0, y: 0.0, z: 0.0}, angular: {x: 1, y: 2.0, z: 1.8}}"
+
+```
 
 ## Status
 
