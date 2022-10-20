@@ -18,6 +18,8 @@
 #include "diff_controller.h"
 #include "commands.h"
 
+#include <inttypes.h>
+
 #define STRING_BUFFER_LEN 100
 
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc); return 1;}}
@@ -47,7 +49,7 @@ unsigned long nextPID = PID_INTERVAL;
 
 /* Stop the robot if it hasn't received a movement command
 in this number of milliseconds */
-#define AUTO_STOP_INTERVAL 2000
+#define AUTO_STOP_INTERVAL 5000
 long lastMotorCommand = AUTO_STOP_INTERVAL;
 
 // A pair of varibles to help parse serial commands (thanks Fergs)
@@ -96,7 +98,7 @@ int runCommand() {
   switch(cmd) {
 
   case READ_ENCODERS:
-    printf("%u %u\n\r", readEncoder(LEFT), readEncoder(RIGHT));
+    printf("L=%" PRIu64 " R=%" PRIu64 "\n\r", readEncoder(LEFT), readEncoder(RIGHT));
     break;
 
    case RESET_ENCODERS:
@@ -210,6 +212,10 @@ void my_loop()
     if (to_ms_since_boot(	get_absolute_time ()) > nextPID) {
       updatePID();
       nextPID += PID_INTERVAL;
+
+      char line[50];
+      sprintf(line, "S=%i %i", speed1,speed2 );
+      debug_txt(line);
     }
     
     // Check to see if we have exceeded the auto-stop interval

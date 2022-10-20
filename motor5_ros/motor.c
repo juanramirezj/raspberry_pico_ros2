@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
+#include <inttypes.h>
 
 #include "motor.h"
 #include "ssd1306.h"
@@ -99,7 +100,7 @@ void BiMotorspeed(BiMotor *m, int s, bool forward)
     {
         pwm_set_duty(m->slice, m->Fchan, 0);
         pwm_set_duty(m->slice, m->Bchan, s);
-        m->forward = true;
+        m->forward = false;
     }
     m->speed = s;
 }
@@ -121,6 +122,7 @@ void BiMotorOff(BiMotor *m)
 
 void MyIRQHandler(uint gpio, uint32_t events)
 {
+    
     if( gpio == mot1_speed)
     {
         t1++;
@@ -129,12 +131,17 @@ void MyIRQHandler(uint gpio, uint32_t events)
     {
         t2++;       
     }
+    // printf("gpio=%u t1=%" PRIu64 "t2=%" PRIu64 "\n\r", gpio, t1,t2);
 }
 
 bool MyTimerHandler(struct repeating_timer *t)
 {
-    speed1 = t1/(delay_ms_timer/1000);
-    speed2 = t2/(delay_ms_timer/1000);
+    static uint64_t t10 = 0;
+    static uint64_t t20 = 0;
+    speed1 = (t1-t10)/(delay_ms_timer/1000);
+    speed2 = (t2-t20)/(delay_ms_timer/1000);
+    t10 = t1;
+    t20 = t2;
     // t1 = 0;
     // t2 = 0;
     return true;
@@ -143,7 +150,8 @@ bool MyTimerHandler(struct repeating_timer *t)
 /* Wrap the encoder reading function */
 uint64_t readEncoder(int i) {
     if (i == LEFT) return t1;
-    else return t2;
+    else if (i == RIGHT) return t2;
+    else return 7;
 }
 
 void resetEncoders()

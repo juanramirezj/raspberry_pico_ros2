@@ -3,7 +3,7 @@
 
 #define LEFT 1
 #define RIGHT 2
-#define MAX_PWM 255
+#define MAX_PWM 100 // 255
 
 typedef struct
 {
